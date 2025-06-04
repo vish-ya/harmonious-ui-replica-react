@@ -1,18 +1,31 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../components/Header/Header';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Dashboard from '../components/Dashboard/Dashboard';
 import Footer from '../components/Footer/Footer';
+import NotificationContent from '../components/Notifications/NotificationContent';
 
 const Index = () => {
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const handleNotificationToggle = () => {
+    setShowNotifications(!showNotifications);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 p-6">
-          <Dashboard />
+        <Sidebar onNotificationClick={handleNotificationToggle} />
+        <main className="flex-1 p-6 relative">
+          {showNotifications ? (
+            <div className="flex justify-center">
+              <NotificationContent onClose={() => setShowNotifications(false)} />
+            </div>
+          ) : (
+            <Dashboard />
+          )}
         </main>
       </div>
       <Footer />
