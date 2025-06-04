@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Search } from 'lucide-react';
 
 const EventsTHU = () => {
   return (
@@ -21,7 +20,7 @@ const EventsTHU = () => {
               placeholder="Search" 
               className="pl-8 pr-4 py-1 border border-gray-300 rounded text-sm w-40"
             />
-            <Search className="w-4 h-4 text-gray-400 absolute left-2 top-1.5" />
+            <img src="/src/assets/icons/search.svg" alt="Search" className="w-4 h-4 text-gray-400 absolute left-2 top-1.5" />
           </div>
           <button className="p-1 text-gray-400 hover:text-gray-600">⚙️</button>
           <button className="p-1 text-gray-400 hover:text-gray-600">📊</button>

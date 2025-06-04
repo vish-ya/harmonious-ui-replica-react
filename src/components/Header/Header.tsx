@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Search, Bell } from 'lucide-react';
 
 const Header = () => {
   return (
@@ -16,9 +15,9 @@ const Header = () => {
       
       <div className="flex items-center space-x-4">
         <div className="relative">
-          <Search className="w-5 h-5 text-gray-300" />
+          <img src="/src/assets/icons/search.svg" alt="Search" className="w-5 h-5 text-gray-300" />
         </div>
-        <Bell className="w-5 h-5 text-gray-300" />
+        <img src="/src/assets/icons/bell.svg" alt="Notifications" className="w-5 h-5 text-gray-300" />
         <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
       </div>
     </header>
