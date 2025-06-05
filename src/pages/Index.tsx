@@ -6,10 +6,10 @@ import Dashboard from '../components/Dashboard/Dashboard';
 import Footer from '../components/Footer/Footer';
 import NotificationContent from '../components/Notifications/NotificationContent';
 
-const Index = () => {
-  const [showNotifications, setShowNotifications] = useState(false);
+const Index: React.FC = () => {
+  const [showNotifications, setShowNotifications] = useState<boolean>(false);
 
-  const handleNotificationToggle = () => {
+  const handleNotificationToggle = (): void => {
     setShowNotifications(!showNotifications);
   };
 

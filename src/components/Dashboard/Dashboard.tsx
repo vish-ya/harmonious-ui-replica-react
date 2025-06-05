@@ -9,7 +9,7 @@ import Incidents from './Incidents';
 import Jobs from './Jobs';
 import EventsTHU from './EventsTHU';
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
