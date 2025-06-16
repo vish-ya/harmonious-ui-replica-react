@@ -155,89 +155,75 @@ const QuickBilling: React.FC = () => {
 
               {/* Table */}
               <div className="border rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead className="w-12"></TableHead>
-                      <TableHead>Service Type</TableHead>
-                      <TableHead>Sub-Service</TableHead>
-                      <TableHead>Billing Type</TableHead>
-                      <TableHead>Tariff Type</TableHead>
-                      <TableHead>Net Amount</TableHead>
-                      <TableHead className="w-12"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {resourceData.map((item) => (
-                      <React.Fragment key={item.id}>
-                        <TableRow className="border-b">
-                          <TableCell>
-                            <div className="w-6 h-6 bg-pink-100 rounded flex items-center justify-center">
-                              <div className="w-3 h-3 bg-pink-500 rounded"></div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{item.id} - {item.title}</div>
-                              <div className="text-sm text-gray-500">{item.type}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-right">
-                              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                item.status === 'Approved' 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {item.status}
-                              </span>
-                              <div className="text-sm text-gray-500 mt-1">{item.dbNumber}</div>
-                              <div className="text-sm text-gray-500">Qty {item.quantity}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal size={16} />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow className="bg-gray-50">
-                          <TableCell></TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div><strong>Service Type:</strong> {item.serviceType}</div>
-                              <div className="mt-2"><strong>Departure Point - Arrival Point:</strong></div>
-                              <div>{item.departurePoint} - {item.arrivalPoint}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div><strong>Sub-Service:</strong> {item.subService}</div>
-                              <div className="mt-2"><strong>From Date - To Date:</strong></div>
-                              <div>{item.fromDate} - {item.toDate}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div><strong>Billing Type:</strong> {item.billingType}</div>
-                              <div className="mt-2"><strong>From Time - To Time:</strong></div>
-                              <div>{item.fromTime} - {item.toTime}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div><strong>Tariff Type:</strong> {item.tariffType}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm font-medium">{item.netAmount}</div>
-                          </TableCell>
-                          <TableCell></TableCell>
-                        </TableRow>
-                      </React.Fragment>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div className="bg-white">
+                  {resourceData.map((item) => (
+                    <div key={item.id} className="border-b border-gray-200 last:border-b-0">
+                      {/* Main Row */}
+                      <div className="flex items-center p-4 bg-white hover:bg-gray-50">
+                        {/* Icon */}
+                        <div className="w-8 h-8 bg-blue-50 rounded flex items-center justify-center mr-4 flex-shrink-0">
+                          <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                        </div>
+                        
+                        {/* Title and Type */}
+                        <div className="flex-1 min-w-0 mr-4">
+                          <div className="font-medium text-gray-900 text-sm">{item.id} - {item.title}</div>
+                          <div className="text-xs text-gray-500">{item.type}</div>
+                        </div>
+
+                        {/* Status and Details */}
+                        <div className="flex items-center space-x-4 mr-4">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            item.status === 'Approved' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {item.status}
+                          </span>
+                          <span className="text-xs text-gray-600">{item.dbNumber}</span>
+                          <span className="text-xs text-gray-600">Qty {item.quantity}</span>
+                        </div>
+
+                        {/* More Options */}
+                        <Button variant="ghost" size="icon" className="flex-shrink-0">
+                          <MoreHorizontal size={16} />
+                        </Button>
+                      </div>
+
+                      {/* Details Grid */}
+                      <div className="bg-gray-50 px-4 py-3">
+                        <div className="grid grid-cols-5 gap-4 text-xs">
+                          <div>
+                            <div className="text-gray-600 mb-1">Service Type</div>
+                            <div className="font-medium text-gray-900">{item.serviceType}</div>
+                            <div className="text-gray-600 mt-2 mb-1">Departure Point → Arrival Point</div>
+                            <div className="text-gray-900">{item.departurePoint} → {item.arrivalPoint}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-600 mb-1">Sub-Service</div>
+                            <div className="font-medium text-gray-900">{item.subService}</div>
+                            <div className="text-gray-600 mt-2 mb-1">From Date → To Date</div>
+                            <div className="text-gray-900">{item.fromDate} → {item.toDate}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-600 mb-1">Billing Type</div>
+                            <div className="font-medium text-gray-900">{item.billingType}</div>
+                            <div className="text-gray-600 mt-2 mb-1">From Time → To Time</div>
+                            <div className="text-gray-900">{item.fromTime} → {item.toTime}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-600 mb-1">Tariff Type</div>
+                            <div className="font-medium text-gray-900">{item.tariffType}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-600 mb-1">Net Amount</div>
+                            <div className="font-semibold text-gray-900">{item.netAmount}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
