@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, FileText, Settings, Truck, Package } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -138,6 +137,22 @@ const CreateOrder: React.FC = () => {
         [field]: value
       }
     }));
+  };
+
+  const handleSave = () => {
+    const allFormData = {
+      ...formData,
+      createReturnOrder,
+      sections: sections.map(section => ({
+        id: section.id,
+        title: section.title,
+        status: section.status,
+        isExpanded: section.isExpanded
+      }))
+    };
+    
+    console.log('Form Data JSON:', JSON.stringify(allFormData, null, 2));
+    alert('Form data saved! Check console for JSON output.');
   };
 
   const getStatusIcon = (status: string, stepNumber: number) => {
@@ -374,6 +389,9 @@ const CreateOrder: React.FC = () => {
             />
             <Button className="bg-blue-500 hover:bg-blue-600 text-white">
               + Customer Order
+            </Button>
+            <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600 text-white">
+              Save
             </Button>
           </div>
         </div>
