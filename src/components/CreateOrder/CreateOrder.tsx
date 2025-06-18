@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, FileText, Settings, Truck, Package } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { AppLayout } from '@/components/AppLayout';
+import { Breadcrumb } from '@/components/Breadcrumb';
 
 interface ExpandableSection {
   id: string;
@@ -14,21 +16,41 @@ interface ExpandableSection {
   isExpanded: boolean;
 }
 
+interface FormData {
+  basic: {
+    customer: string;
+    contract: string;
+    cluster: string;
+    orderDate: string;
+    consignor: string;
+    consignee: string;
+    wbsNo: string;
+    customerRefNo: string;
+    billToId: string;
+    refForecastId: string;
+  };
+  service: {
+    internalOrderDate: string;
+    contractService: string;
+    customerVendor: string;
+  };
+}
+
 const CreateOrder: React.FC = () => {
   const [sections, setSections] = useState<ExpandableSection[]>([
     {
       id: 'basic',
       title: 'Basic Details',
       icon: <FileText className="w-5 h-5" />,
-      status: 'completed',
-      isExpanded: false
+      status: 'current',
+      isExpanded: true
     },
     {
       id: 'service',
       title: 'Service Details',
       icon: <Settings className="w-5 h-5" />,
-      status: 'current',
-      isExpanded: true
+      status: 'pending',
+      isExpanded: false
     },
     {
       id: 'shipment',
@@ -46,7 +68,59 @@ const CreateOrder: React.FC = () => {
     }
   ]);
 
+  const [formData, setFormData] = useState<FormData>({
+    basic: {
+      customer: '',
+      contract: '',
+      cluster: '',
+      orderDate: '2025-06-18',
+      consignor: '',
+      consignee: '',
+      wbsNo: 'DE17BAS843',
+      customerRefNo: '',
+      billToId: '',
+      refForecastId: ''
+    },
+    service: {
+      internalOrderDate: '',
+      contractService: '',
+      customerVendor: ''
+    }
+  });
+
+  const breadcrumbItems = [
+    { label: 'Home', href: '/dashboard', active: false },
+    { label: 'Create Order', active: true }
+  ];
+
   const [createReturnOrder, setCreateReturnOrder] = useState(false);
+
+  // Check if mandatory fields are completed for each section
+  const checkSectionCompletion = (sectionId: string): boolean => {
+    switch (sectionId) {
+      case 'basic':
+        return !!(formData.basic.customer && formData.basic.contract && formData.basic.cluster);
+      case 'service':
+        return !!(formData.service.internalOrderDate && formData.service.contractService && formData.service.customerVendor);
+      default:
+        return false;
+    }
+  };
+
+  // Update section status based on form completion
+  useEffect(() => {
+    setSections(prev => prev.map(section => {
+      const isCompleted = checkSectionCompletion(section.id);
+      
+      if (isCompleted && section.status !== 'completed') {
+        return { ...section, status: 'completed' };
+      } else if (!isCompleted && section.status === 'completed') {
+        return { ...section, status: section.id === 'basic' ? 'current' : 'pending' };
+      }
+      
+      return section;
+    }));
+  }, [formData]);
 
   const toggleSection = (sectionId: string) => {
     setSections(prev => prev.map(section => 
@@ -54,6 +128,16 @@ const CreateOrder: React.FC = () => {
         ? { ...section, isExpanded: !section.isExpanded }
         : section
     ));
+  };
+
+  const updateFormData = (section: keyof FormData, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }));
   };
 
   const getStatusIcon = (status: string, stepNumber: number) => {
@@ -88,7 +172,7 @@ const CreateOrder: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Customer <span className="text-red-500">*</span>
           </label>
-          <Select>
+          <Select value={formData.basic.customer} onValueChange={(value) => updateFormData('basic', 'customer', value)}>
             <SelectTrigger>
               <SelectValue placeholder="010159 || BASF HEALTH AND CARE PRO..." />
             </SelectTrigger>
@@ -102,7 +186,7 @@ const CreateOrder: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Contract <span className="text-red-500">*</span>
           </label>
-          <Select>
+          <Select value={formData.basic.contract} onValueChange={(value) => updateFormData('basic', 'contract', value)}>
             <SelectTrigger>
               <SelectValue placeholder="CON000000382 || Test" />
             </SelectTrigger>
@@ -116,7 +200,7 @@ const CreateOrder: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Cluster <span className="text-red-500">*</span>
           </label>
-          <Select>
+          <Select value={formData.basic.cluster} onValueChange={(value) => updateFormData('basic', 'cluster', value)}>
             <SelectTrigger>
               <SelectValue placeholder="10-000406 || Riihimäki ( 10-00040-6 )" />
             </SelectTrigger>
@@ -128,12 +212,16 @@ const CreateOrder: React.FC = () => {
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Order Date</label>
-          <Input type="date" defaultValue="2025-06-18" />
+          <Input 
+            type="date" 
+            value={formData.basic.orderDate}
+            onChange={(e) => updateFormData('basic', 'orderDate', e.target.value)}
+          />
         </div>
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Consignor</label>
-          <Select>
+          <Select value={formData.basic.consignor} onValueChange={(value) => updateFormData('basic', 'consignor', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select Consignor" />
             </SelectTrigger>
@@ -145,7 +233,7 @@ const CreateOrder: React.FC = () => {
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Consignee</label>
-          <Select>
+          <Select value={formData.basic.consignee} onValueChange={(value) => updateFormData('basic', 'consignee', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select Consignee" />
             </SelectTrigger>
@@ -157,17 +245,24 @@ const CreateOrder: React.FC = () => {
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">WBS No.</label>
-          <Input defaultValue="DE17BAS843" />
+          <Input 
+            value={formData.basic.wbsNo}
+            onChange={(e) => updateFormData('basic', 'wbsNo', e.target.value)}
+          />
         </div>
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Customer Ref No.</label>
-          <Input placeholder="Enter Customer Ref No." />
+          <Input 
+            placeholder="Enter Customer Ref No."
+            value={formData.basic.customerRefNo}
+            onChange={(e) => updateFormData('basic', 'customerRefNo', e.target.value)}
+          />
         </div>
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Bill To ID</label>
-          <Select>
+          <Select value={formData.basic.billToId} onValueChange={(value) => updateFormData('basic', 'billToId', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select Bill to ID" />
             </SelectTrigger>
@@ -192,7 +287,10 @@ const CreateOrder: React.FC = () => {
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Ref.Forecast ID</label>
-          <Input />
+          <Input 
+            value={formData.basic.refForecastId}
+            onChange={(e) => updateFormData('basic', 'refForecastId', e.target.value)}
+          />
         </div>
       </div>
       
@@ -209,16 +307,64 @@ const CreateOrder: React.FC = () => {
     </div>
   );
 
+  const renderServiceDetailsForm = () => (
+    <div className="p-6 bg-white border-t">
+      <div className="grid grid-cols-3 gap-6 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Internal Order Date <span className="text-red-500">*</span>
+          </label>
+          <Input
+            type="date"
+            value={formData.service.internalOrderDate}
+            onChange={(e) => updateFormData('service', 'internalOrderDate', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Contract <span className="text-red-500">*</span>
+          </label>
+          <Select value={formData.service.contractService} onValueChange={(value) => updateFormData('service', 'contractService', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Contract" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="db-cargo">DB Cargo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Customer/Vendor <span className="text-red-500">*</span>
+          </label>
+          <Select value={formData.service.customerVendor} onValueChange={(value) => updateFormData('service', 'customerVendor', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Customer/Vendor" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="db-cargo">DB Cargo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <AppLayout>
+      {/* Breadcrumb */}
+      <div className="hidden md:block">
+        <Breadcrumb items={breadcrumbItems} />
+      </div>
+      
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-semibold text-gray-800 flex items-center">
-              <span className="mr-2">🏠</span>
+            <h6 className="text-2xl font-semibold text-gray-800 flex items-center">
               Create Order
-            </h1>
+            </h6>
           </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">Customer Order</span>
@@ -235,7 +381,7 @@ const CreateOrder: React.FC = () => {
         {/* Main Content with Status Bar */}
         <div className="flex gap-6">
           {/* Status Bar */}
-          <div className="flex flex-col items-center pt-6 relative">
+          <div className="flex flex-col items-center relative">
             {sections.map((section, index) => (
               <div key={section.id} className="flex flex-col items-center relative">
                 {/* Status Circle */}
@@ -245,7 +391,7 @@ const CreateOrder: React.FC = () => {
                 {index < sections.length - 1 && (
                   <div 
                     className={`w-0.5 bg-gray-300 transition-all duration-300 ${
-                      section.isExpanded ? 'h-32' : 'h-16'
+                      section.isExpanded ? 'h-32' : 'h-12'
                     }`}
                   />
                 )}
@@ -281,13 +427,7 @@ const CreateOrder: React.FC = () => {
                 </div>
                 
                 {section.isExpanded && section.id === 'basic' && renderBasicDetailsForm()}
-                {section.isExpanded && section.id === 'service' && (
-                  <div className="p-6 bg-white border-t">
-                    <div className="text-center text-gray-500 py-8">
-                      Service Details Form Content
-                    </div>
-                  </div>
-                )}
+                {section.isExpanded && section.id === 'service' && renderServiceDetailsForm()}
                 {section.isExpanded && section.id === 'shipment' && (
                   <div className="p-6 bg-white border-t">
                     <div className="text-center text-gray-500 py-8">
@@ -307,7 +447,7 @@ const CreateOrder: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 
