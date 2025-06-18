@@ -56,20 +56,26 @@ const CreateOrder: React.FC = () => {
     ));
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string, stepNumber: number) => {
     switch (status) {
       case 'completed':
-        return <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-          <span className="text-white text-xs">✓</span>
-        </div>;
+        return (
+          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-semibold relative z-10">
+            ✓
+          </div>
+        );
       case 'current':
-        return <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
-          <span className="text-white text-xs">✓</span>
-        </div>;
+        return (
+          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold relative z-10">
+            {stepNumber}
+          </div>
+        );
       case 'pending':
-        return <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
-          <span className="text-gray-500 text-xs">✓</span>
-        </div>;
+        return (
+          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-sm font-semibold relative z-10">
+            {stepNumber}
+          </div>
+        );
       default:
         return null;
     }
@@ -226,58 +232,79 @@ const CreateOrder: React.FC = () => {
           </div>
         </div>
 
-        {/* Expandable Sections */}
-        <div className="space-y-4">
-          {sections.map((section) => (
-            <div key={section.id} className="bg-white rounded-lg shadow-sm border">
-              <div 
-                className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
-                onClick={() => toggleSection(section.id)}
-              >
-                <div className="flex items-center space-x-3">
-                  {getStatusIcon(section.status)}
-                  <div className="text-gray-600">{section.icon}</div>
-                  <span className="font-medium text-gray-800">{section.title}</span>
-                  {section.id === 'service' && (
-                    <div className="flex items-center space-x-2 ml-auto mr-4">
-                      <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-medium">
-                        BLOCK TRAIN CONVENTIONAL
-                      </span>
-                      <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-medium">
-                        Loaded
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="text-gray-400">
-                  {section.isExpanded ? <ChevronUp /> : <ChevronDown />}
-                </div>
+        {/* Main Content with Status Bar */}
+        <div className="flex gap-6">
+          {/* Status Bar */}
+          <div className="flex flex-col items-center pt-6 relative">
+            {sections.map((section, index) => (
+              <div key={section.id} className="flex flex-col items-center relative">
+                {/* Status Circle */}
+                {getStatusIcon(section.status, index + 1)}
+                
+                {/* Connecting Line */}
+                {index < sections.length - 1 && (
+                  <div 
+                    className={`w-0.5 bg-gray-300 transition-all duration-300 ${
+                      section.isExpanded ? 'h-32' : 'h-16'
+                    }`}
+                  />
+                )}
               </div>
-              
-              {section.isExpanded && section.id === 'basic' && renderBasicDetailsForm()}
-              {section.isExpanded && section.id === 'service' && (
-                <div className="p-6 bg-white border-t">
-                  <div className="text-center text-gray-500 py-8">
-                    Service Details Form Content
+            ))}
+          </div>
+
+          {/* Expandable Sections */}
+          <div className="flex-1 space-y-4">
+            {sections.map((section) => (
+              <div key={section.id} className="bg-white rounded-lg shadow-sm border">
+                <div 
+                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+                  onClick={() => toggleSection(section.id)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="text-gray-600">{section.icon}</div>
+                    <span className="font-medium text-gray-800">{section.title}</span>
+                    {section.id === 'service' && (
+                      <div className="flex items-center space-x-2 ml-auto mr-4">
+                        <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-medium">
+                          BLOCK TRAIN CONVENTIONAL
+                        </span>
+                        <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-medium">
+                          Loaded
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-gray-400">
+                    {section.isExpanded ? <ChevronUp /> : <ChevronDown />}
                   </div>
                 </div>
-              )}
-              {section.isExpanded && section.id === 'shipment' && (
-                <div className="p-6 bg-white border-t">
-                  <div className="text-center text-gray-500 py-8">
-                    Shipment Details Form Content
+                
+                {section.isExpanded && section.id === 'basic' && renderBasicDetailsForm()}
+                {section.isExpanded && section.id === 'service' && (
+                  <div className="p-6 bg-white border-t">
+                    <div className="text-center text-gray-500 py-8">
+                      Service Details Form Content
+                    </div>
                   </div>
-                </div>
-              )}
-              {section.isExpanded && section.id === 'consignment' && (
-                <div className="p-6 bg-white border-t">
-                  <div className="text-center text-gray-500 py-8">
-                    Consignment Details Form Content
+                )}
+                {section.isExpanded && section.id === 'shipment' && (
+                  <div className="p-6 bg-white border-t">
+                    <div className="text-center text-gray-500 py-8">
+                      Shipment Details Form Content
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+                {section.isExpanded && section.id === 'consignment' && (
+                  <div className="p-6 bg-white border-t">
+                    <div className="text-center text-gray-500 py-8">
+                      Consignment Details Form Content
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
