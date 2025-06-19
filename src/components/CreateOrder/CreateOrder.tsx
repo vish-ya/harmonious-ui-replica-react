@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, FileText, Settings, Truck, Package } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -109,6 +110,16 @@ const CreateOrder: React.FC = () => {
     }
   };
 
+  const updateFormData = (section: keyof FormData, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }));
+  };
+
   // Update section status based on form completion
   useEffect(() => {
     setSections(prev => prev.map(section => {
@@ -173,6 +184,14 @@ const CreateOrder: React.FC = () => {
     alert('Data has been saved Successfully!\n\n' + JSON.stringify(allFormData));
   };
 
+  const toggleSection = (sectionId: string) => {
+    setSections(prev => prev.map(section => 
+      section.id === sectionId 
+        ? { ...section, isExpanded: !section.isExpanded }
+        : section
+    ));
+  };
+
   const getStatusIcon = (status: string, stepNumber: number) => {
     switch (status) {
       case 'completed':
@@ -196,14 +215,6 @@ const CreateOrder: React.FC = () => {
       default:
         return null;
     }
-  };
-
-  const toggleSection = (sectionId: string) => {
-    setSections(prev => prev.map(section => 
-      section.id === sectionId 
-        ? { ...section, isExpanded: !section.isExpanded }
-        : section
-    ));
   };
 
   const getFieldClassName = (fieldName: string, sectionName: string) => {
