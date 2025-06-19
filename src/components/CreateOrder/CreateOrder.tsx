@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, FileText, Settings, Truck, Package } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -36,37 +36,6 @@ interface FormData {
 }
 
 const CreateOrder: React.FC = () => {
-  const [sections, setSections] = useState<ExpandableSection[]>([
-    {
-      id: 'basic',
-      title: 'Basic Details',
-      icon: <FileText className="w-5 h-5" />,
-      status: 'current',
-      isExpanded: true
-    },
-    {
-      id: 'service',
-      title: 'Service Details',
-      icon: <Settings className="w-5 h-5" />,
-      status: 'pending',
-      isExpanded: false
-    },
-    {
-      id: 'shipment',
-      title: 'Shipment Details',
-      icon: <Truck className="w-5 h-5" />,
-      status: 'pending',
-      isExpanded: false
-    },
-    {
-      id: 'consignment',
-      title: 'Consignment Details',
-      icon: <Package className="w-5 h-5" />,
-      status: 'pending',
-      isExpanded: false
-    }
-  ]);
-
   const [formData, setFormData] = useState<FormData>({
     basic: {
       customer: '',
@@ -86,6 +55,40 @@ const CreateOrder: React.FC = () => {
       customerVendor: ''
     }
   });
+
+  const [sections, setSections] = useState<ExpandableSection[]>([
+    {
+      id: 'basic',
+      title: 'Basic Details',
+      icon: <FileText className="w-5 h-5" />,
+      status: 'completed',
+      isExpanded: true
+    },
+    {
+      id: 'service',
+      title: 'Service Details',
+      icon: <Settings className="w-5 h-5" />,
+      status: 'current',
+      isExpanded: false
+    },
+    {
+      id: 'shipment',
+      title: 'Shipment Details',
+      icon: <Truck className="w-5 h-5" />,
+      status: 'pending',
+      isExpanded: false
+    },
+    {
+      id: 'consignment',
+      title: 'Consignment Details',
+      icon: <Package className="w-5 h-5" />,
+      status: 'pending',
+      isExpanded: false
+    }
+  ]);
+
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [showValidation, setShowValidation] = useState(false);
 
   const breadcrumbItems = [
     { label: 'Home', href: '/dashboard', active: false },
@@ -119,27 +122,43 @@ const CreateOrder: React.FC = () => {
       
       return section;
     }));
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [formData]);
 
-  const toggleSection = (sectionId: string) => {
-    setSections(prev => prev.map(section => 
-      section.id === sectionId 
-        ? { ...section, isExpanded: !section.isExpanded }
-        : section
-    ));
-  };
+  const validateForm = (): boolean => {
+    const errors: string[] = [];
 
-  const updateFormData = (section: keyof FormData, field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
-      }
-    }));
+    // Check basic mandatory fields
+    if (!formData.basic.customer) errors.push('Customer is required');
+    if (!formData.basic.contract) errors.push('Contract is required');
+    if (!formData.basic.cluster) errors.push('Cluster is required');
+
+    // Check service mandatory fields
+    if (!formData.service.internalOrderDate) errors.push('Internal Order Date is required');
+    if (!formData.service.contractService) errors.push('Contract Service is required');
+    if (!formData.service.customerVendor) errors.push('Customer/Vendor is required');
+
+    setValidationErrors(errors);
+    setShowValidation(errors.length > 0);
+    
+    return errors.length === 0;
   };
 
   const handleSave = () => {
+    if (!validateForm()) {
+      alert('Please fill all the mandatory fields');
+      return;
+    }
+
     const allFormData = {
       ...formData,
       createReturnOrder,
@@ -151,8 +170,7 @@ const CreateOrder: React.FC = () => {
       }))
     };
     
-    console.log('Form Data JSON:', JSON.stringify(allFormData, null, 2));
-    alert('Form data saved! Check console for JSON output.');
+    alert('Data has been saved Successfully!\n\n' + JSON.stringify(allFormData));
   };
 
   const getStatusIcon = (status: string, stepNumber: number) => {
@@ -180,6 +198,24 @@ const CreateOrder: React.FC = () => {
     }
   };
 
+  const toggleSection = (sectionId: string) => {
+    setSections(prev => prev.map(section => 
+      section.id === sectionId 
+        ? { ...section, isExpanded: !section.isExpanded }
+        : section
+    ));
+  };
+
+  const getFieldClassName = (fieldName: string, sectionName: string) => {
+    const isEmpty = sectionName === 'basic' 
+      ? !formData.basic[fieldName as keyof typeof formData.basic]
+      : !formData.service[fieldName as keyof typeof formData.service];
+    
+    return showValidation && isEmpty 
+      ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
+      : "";
+  };
+
   const renderBasicDetailsForm = () => (
     <div className="p-6 bg-white border-t">
       <div className="grid grid-cols-4 gap-6">
@@ -188,8 +224,8 @@ const CreateOrder: React.FC = () => {
             Customer <span className="text-red-500">*</span>
           </label>
           <Select value={formData.basic.customer} onValueChange={(value) => updateFormData('basic', 'customer', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="010159 || BASF HEALTH AND CARE PRO..." />
+            <SelectTrigger className={getFieldClassName('customer', 'basic')}>
+              <SelectValue placeholder="Select Customer." />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="basf">010159 || BASF HEALTH AND CARE PRODUCTS</SelectItem>
@@ -202,8 +238,8 @@ const CreateOrder: React.FC = () => {
             Contract <span className="text-red-500">*</span>
           </label>
           <Select value={formData.basic.contract} onValueChange={(value) => updateFormData('basic', 'contract', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="CON000000382 || Test" />
+            <SelectTrigger className={getFieldClassName('contract', 'basic')}>
+              <SelectValue placeholder="Select Contract" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="test">CON000000382 || Test</SelectItem>
@@ -216,8 +252,8 @@ const CreateOrder: React.FC = () => {
             Cluster <span className="text-red-500">*</span>
           </label>
           <Select value={formData.basic.cluster} onValueChange={(value) => updateFormData('basic', 'cluster', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="10-000406 || Riihimäki ( 10-00040-6 )" />
+            <SelectTrigger className={getFieldClassName('cluster', 'basic')}>
+              <SelectValue placeholder="Select Cluster" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="riihimaki">10-000406 || Riihimäki ( 10-00040-6 )</SelectItem>
@@ -230,7 +266,7 @@ const CreateOrder: React.FC = () => {
           <Input 
             type="date" 
             value={formData.basic.orderDate}
-            onChange={(e) => updateFormData('basic', 'orderDate', e.target.value)}
+            onChange={(e) => updateFormData('basic', 'orderDate', e.target.value)} 
           />
         </div>
         
@@ -324,43 +360,45 @@ const CreateOrder: React.FC = () => {
 
   const renderServiceDetailsForm = () => (
     <div className="p-6 bg-white border-t">
-      <div className="grid grid-cols-3 gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Internal Order Date <span className="text-red-500">*</span>
-          </label>
-          <Input
-            type="date"
-            value={formData.service.internalOrderDate}
-            onChange={(e) => updateFormData('service', 'internalOrderDate', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Contract <span className="text-red-500">*</span>
-          </label>
-          <Select value={formData.service.contractService} onValueChange={(value) => updateFormData('service', 'contractService', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Contract" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="db-cargo">DB Cargo</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Customer/Vendor <span className="text-red-500">*</span>
-          </label>
-          <Select value={formData.service.customerVendor} onValueChange={(value) => updateFormData('service', 'customerVendor', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Customer/Vendor" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="db-cargo">DB Cargo</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="text-gray-500 py-8">
+        <div className="grid grid-cols-3 gap-6 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Internal Order Date <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="date"
+              value={formData.service.internalOrderDate}
+              onChange={(e) => updateFormData('service', 'internalOrderDate', e.target.value)}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm ${getFieldClassName('internalOrderDate', 'service')}`}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Contract <span className="text-red-500">*</span>
+            </label>
+            <Select value={formData.service.contractService} onValueChange={(value) => updateFormData('service', 'contractService', value)}>
+              <SelectTrigger className={getFieldClassName('contractService', 'service')}>
+                <SelectValue placeholder="Select Contract" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="db-cargo">DB Cargo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Customer/Vendor <span className="text-red-500">*</span>
+            </label>
+            <Select value={formData.service.customerVendor} onValueChange={(value) => updateFormData('service', 'customerVendor', value)}>
+              <SelectTrigger className={getFieldClassName('customerVendor', 'service')}>
+                <SelectValue placeholder="Select Customer/Vendor" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="db-cargo">DB Cargo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
     </div>
@@ -374,6 +412,26 @@ const CreateOrder: React.FC = () => {
       </div>
       
       <div className="max-w-7xl mx-auto">
+        {/* Validation Error Message */}
+        {showValidation && validationErrors.length > 0 && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+            <div className="flex">
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  Please fill all the mandatory fields
+                </h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <ul className="list-disc list-inside">
+                    {validationErrors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
@@ -399,7 +457,7 @@ const CreateOrder: React.FC = () => {
         {/* Main Content with Status Bar */}
         <div className="flex gap-6">
           {/* Status Bar */}
-          <div className="flex flex-col items-center relative">
+          <div className="flex flex-col items-center sticky">
             {sections.map((section, index) => (
               <div key={section.id} className="flex flex-col items-center relative">
                 {/* Status Circle */}
